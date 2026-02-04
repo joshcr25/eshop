@@ -25,7 +25,7 @@ public class ProductController {
     }
 
     @PostMapping("/create")
-    public String createProductPost(@ModelAttribute Product product, Model model) {
+    public String createProductPost(@ModelAttribute("product") Product product, Model model) {
         service.create(product);
         return "redirect:list";
 
@@ -49,11 +49,11 @@ public class ProductController {
     }
 
     @PostMapping("/edit")
-    public String editProductPost(@ModelAttribute Product product) {
+    public String editProductPost(@ModelAttribute("product") Product product) {
         service.update(product);
         return "redirect:list";
     }
-    
+
     @GetMapping("/delete/{id}")
     public String deleteProductPage(@PathVariable String id, Model model) {
         Product product = service.findById(id);
@@ -65,7 +65,7 @@ public class ProductController {
     }
 
     @PostMapping("/delete")
-    public String deleteProductPost(@ModelAttribute Product product) {
+    public String deleteProductPost(@ModelAttribute("product") Product product) {
         service.delete(product);
         return "redirect:list";
     }
