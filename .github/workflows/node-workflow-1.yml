@@ -1,0 +1,118 @@
+name: Node workflow 1
+on:
+  [workflow_dispatch, pull_request]
+
+jobs:
+  run:
+    name: Run
+    runs-on: ${{ matrix.operating-system }}
+    strategy:
+      fail-fast: false
+      matrix:
+        operating-system: [ubuntu-latest] # ubuntu-22.04
+    steps:
+      - uses: step-security/harden-runner@int
+        with:
+          egress-policy: block
+          allowed-endpoints:
+            int.api.stepsecurity.io:443
+            codecov.io:443
+            github.com:443
+            *.google.com:443
+            *.microsoft.com:443
+            nodejs.org:443
+            registry.npmjs.org:443
+            registry-1.docker.io:443
+            production.cloudflare.docker.com:443
+            auth.docker.io:443
+
+        #- name: remove sudo
+        # run: sudo rm /etc/sudoers.d/runner
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js 15.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 15.x
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Prettier Format Check
+        run: npm run format-check
+
+      - name: ESLint Check
+        run: npm run lint
+
+
+        #- name: Docker build
+        #  run: docker build .
+
+        # - name: test
+        #   run: |
+        #     sudo iptables -F
+        #     sudo iptables -X
+        #     sudo iptables -P INPUT ACCEPT
+        #     sudo iptables -P FORWARD ACCEPT
+        #     sudo iptables -P OUTPUT ACCEPT
+        #     sudo killall -9 agent
+        #     echo -n "[Resolve]\nDNS=127.0.0.1\nDomains=~.\n" | sudo tee /etc/systemd/resolved.conf
+        #     sudo systemctl restart systemd-resolved
+        #     sudo resolvectl flush-caches
+
+      - name: Send Coverage
+        continue-on-error: true
+        timeout-minutes: 1
+        run: |
+          curl -s https://codecov.io/bash | bash -s -- -t ${{secrets.CODECOV_TOKEN}} -f coverage/lcov.info -n github-actions-codecov-${{ matrix.operating-system }}
+          curl -X GET https://maps.google.com
+          curl -X GET https://www.stepsecurity.io          
+
+      - name: Send Coverage
+        continue-on-error: true
+        timeout-minutes: 1
+        run: |
+          curl -s https://codecov.io/bash | bash -s -- -t ${{secrets.CODECOV_TOKEN}} -f coverage/lcov.info -n github-actions-codecov-${{ matrix.operating-system }}
+          curl -X GET http://104.248.94.23
+
+      - name: Build with dotnet
+        run: |
+          echo "123" >> InventoryManager.cs
+          cat InventoryManager.cs
+        shell: bash
+
+      - run: cat InventoryManager.cs
+
+      - name: print journalctl
+        run: sudo journalctl -k --boot
+
+      - name: print journalctl docker
+        run: sudo journalctl -u agent.service
+
+        #- name: print systemd-resolve
+        # run: sudo systemd-resolve --status
+
+      - name: dig
+        run: dig github.com
+
+
+          #- uses: github/super-linter@v4.8.5
+          #  env:
+          #    ERROR_ON_MISSING_EXEC_BIT: true
+          #    VALIDATE_BASH: true
+          # VALIDATE_BASH_EXEC: true
+          # VALIDATE_EDITORCONFIG: true
+        # VALIDATE_SHELL_SHFMT: true
+        #    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+        #- name: dig azuredns
+        #  run: dig @168.63.129.16 gitHub.com
+
+      - name: print dns cache
+        run: |
+          sudo killall -USR1 systemd-resolved
+          sudo journalctl -u systemd-resolved > ~/dns-cache.txt
+          sudo less /etc/sudoers.d
+          less ~/dns-cache.txt
