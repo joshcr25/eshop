@@ -29,6 +29,7 @@ repositories {
 }
 
 dependencies {
+    implementation("com.zaxxer:HikariCP:6.2.1")
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
     compileOnly("org.projectlombok:lombok")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
