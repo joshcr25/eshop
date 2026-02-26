@@ -31,10 +31,10 @@ public class CarController {
     @PostMapping("/createCar")
     public String createCarPost(@ModelAttribute Car car) {
         carService.create(car);
-        return "redirect:/car/ListCar";
+        return "redirect:/car/listCar";
     }
 
-    @GetMapping("/ListCar")
+    @GetMapping("/listCar")
     public String carListPage(Model model) {
         List<Car> allCars = carService.findAll();
         model.addAttribute("cars", allCars);
@@ -45,7 +45,7 @@ public class CarController {
     public String editCarPage(@PathVariable String carId, Model model) {
         Car car = carService.findById(carId);
         if (car == null) {
-            return "redirect:/car/ListCar";
+            return "redirect:/car/listCar";
         }
         model.addAttribute("car", car);
         return "editCar";
@@ -54,12 +54,12 @@ public class CarController {
     @PostMapping("/editCar")
     public String editCarPost(@ModelAttribute Car car) {
         carService.update(car.getCarId(), car);
-        return "redirect:ListCar";
+        return "redirect:listCar";
     }
 
     @PostMapping("/deleteCar")
     public String deleteCar(@RequestParam("carId") String carId) {
         carService.deleteCarById(carId);
-        return "redirect:ListCar";
+        return "redirect:listCar";
     }
 }

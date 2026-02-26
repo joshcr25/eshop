@@ -15,7 +15,6 @@ public class ProductRepository implements ProductRepositoryInterface {
     public Product create(Product product) {
         productData.add(product);
         return product;
-
     }
 
     @Override
@@ -46,12 +45,12 @@ public class ProductRepository implements ProductRepositoryInterface {
     }
 
     @Override
-    public Product delete(Product deletedProduct) {
+    public Product delete(Product updatedProduct) {
         for (int i = 0; i < productData.size(); i++) {
             Product existingProduct = productData.get(i);
-            if (existingProduct.getProductId().equals(deletedProduct.getProductId())) {
+            if (existingProduct.getProductId().equals(updatedProduct.getProductId())) {
                 productData.remove(i);
-                return deletedProduct;
+                return updatedProduct;
             }
         }
         return null;
