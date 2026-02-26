@@ -31,3 +31,172 @@ After writing unit tests, I feel more confident that the program is running prop
 
 ### 2. Look at your CI/CD workflows (GitHub)/pipelines (GitLab). Do you think the current implementation has met the definition of Continuous Integration and Continuous Deployment? Explain the reasons (minimum 3 sentences)!
 No, the implementation only partially meets the definition, with significant gaps in both CI and CD. The reasons are limited continuous integration. This implementation has only basic testing, The primary CI workflow (`ci.yml`) runs unit tests on push and pull requests, which is a fundamental CI practice. However, the implementation is lacks comprehensive CI practices such as code coverage reporting, static code analysis beyond security scanning (like PMD for code quality), or automated integration testing. While additional workflows exist (CodeQL, PMD, super-linter), they are not integrated into the core CI pipeline as required checks, meaning failures in linting or code quality analysis don't block merges, defeating the purpose of continuous integration. Besides that, this repository has zero CD implementation. There are no workflows that automatically build, package, or deploy the application to any environment (staging, production, etc.). A true CD pipeline would automatically deploy successful builds to target environments. The current setup only includes code quality and security checks but provides no mechanism for releasing or deploying the application, which is essential for continuous deployment.
+
+# Module 03
+
+# The SOLID Implementation
+- SRP (Not fully complied, so I change the code)
+- OCP (Not fully complied, so I change the code)
+- LSP (Fully complied because I don't see the violation)
+- ISP (Fully complied, because I don't see the violation)
+- DIP (Not fully complied, so I change the code)
+
+## Reflection
+### 1. Explain what principles you apply to your project!
+All principles of SOLID (Single Responsibility Principle (SRP), Open-Closed Principle (OCP), Liskov Substitution Principle (LSP), Interface Segregation Principle (ISP), Dependency Inversion Principle (DIP)) to make the code of project clean.
+### 2. Explain the advantages of applying SOLID principles to your project with examples.
+- Easier to test by applying single responsibility principle 
+Example: 
+  (@GetMapping("/editCar/{carId}")
+  public String editCarPage(@PathVariable String carId, Model model) {
+  Car car = carService.findById(carId);
+  if (car == null) {
+  return "redirect:/car/listCar";
+  }
+  model.addAttribute("car", car);
+  return "editCar";
+  })
+
+- Reduce side effects of existing methods after adding some methods by applying open-closed principle
+Example: 
+  @Override
+  public Product create(Product product) {
+  if (product.getProductId() == null || product.getProductId().isBlank()) {
+  product.setProductId(UUID.randomUUID().toString());
+  }
+  productRepository.create(product);
+  return product;
+  }
+
+  @Override
+  public List<Product> findAll() {
+  Iterator<Product> productIterator = productRepository.findAll();
+  List<Product> allProduct = new ArrayList<>();
+  productIterator.forEachRemaining(allProduct::add);
+  return allProduct;
+  }
+
+  @Override
+  public Product findById(String productId) {
+  return productRepository.findById(productId);
+  }
+
+  @Override
+  public Product update(Product product) {
+  return productRepository.update(product);
+  }
+
+  @Override
+  public Product delete(Product product) {
+  return productRepository.delete(product);
+  }
+  - Allowing add new subclasses without modifying existing, tested code when applying Liskov substitution principle.
+  Example:
+    class A {
+    public String call() {
+      System.out.println("Test call");
+      return "call";
+      }
+    }
+
+    class B extends A {
+    @Override
+    public String call() {
+      System.out.println("Test print");
+      return "print";
+      }
+    }
+
+    public class Main {
+      public static void main(String[] args) {
+      A a = new B();
+      String result = a.call();          
+  }
+}
+- Reduced coupling (only specific methods they need) by applying Interface Segregation Principle
+Example:
+// Focused, granular interfaces
+  interface Printer { void print(); }
+  interface Scanner { void scan(); }
+  interface Fax { void fax(); }
+
+// Simple device only uses what it needs
+class SimplePrinter implements Printer {
+public void print() {
+System.out.println("Printing document...");
+}
+}
+
+// Multi-function device can implement multiple interfaces
+class AllInOneMachine implements Printer, Scanner, Fax {
+public void print() { System.out.println("Printing..."); }
+public void scan() { System.out.println("Scanning..."); }
+public void fax() { System.out.println("Faxing..."); }
+}
+
+- Gain loose coupling so does not ripple through the entire system by applying Dependency Inversion Principle
+Example:
+  // 1. The Abstraction (Both depend on this)
+  interface MessageSender {
+  void send(String message);
+  }
+
+// 2. Low-Level Modules (Implement the abstraction)
+class EmailSender implements MessageSender {
+public void send(String message) { System.out.println("Email: " + message); }
+}
+
+class SmsSender implements MessageSender {
+public void send(String message) { System.out.println("SMS: " + message); }
+}
+
+// 3. High-Level Module (Depends ONLY on the abstraction)
+class NotificationService {
+    private final MessageSender sender;
+
+    // Dependency is "Injected" via constructor
+    public NotificationService(MessageSender sender) {
+        this.sender = sender;
+    }
+
+    public void notifyUser(String msg) {
+        sender.send(msg);
+    }
+}
+### 3. Explain the disadvantages of not applying SOLID principles to your project with examples.
+- Hard to change when you need to add classes because code becomes tightly coupled.
+Example:
+  // VIOLATION: Everything is in one class
+  public class OrderProcessor {
+
+  // VIOLATION (SRP): Handles logic, database, AND email
+  public void processOrder(String orderType) {
+
+        // VIOLATION (OCP): Hardcoded logic. Adding a new type requires modifying this file.
+        if (orderType.equals("Standard")) {
+            System.out.println("Processing standard order...");
+        } else if (orderType.equals("Express")) {
+            System.out.println("Processing express order...");
+        }
+
+        // VIOLATION (DIP): Directly instantiates a concrete low-level class
+        MySQLDatabase db = new MySQLDatabase(); 
+        db.saveOrder();
+
+        // VIOLATION (ISP): Imagine an interface forced this class to also implement 'ship()' 
+        // even if this specific processor doesn't handle shipping.
+        
+        System.out.println("Sending Email Notification...");
+  }
+  }
+
+class MySQLDatabase {
+public void saveOrder() { System.out.println("Saving to MySQL..."); }
+}
+
+#### Why this is a fault?
+1. Violation of SRP (Single Responsibility Principle): If the email format changes, you have to edit the `OrderProcessor`. If the database schema changes, you edit the `OrderProcessor`. It has too many reasons to change.
+2. Violation of OCP (Open/Closed): Every time you add a new order type (e.g., "International Delivery"), you must open this file and add another else if block, which risks breaking existing code. 
+3. Violation of LSP (Liskov Substitution): If you created a `GuestOrderProcessor` that threw an error during saveOrder(), any code expecting a generic processor would crash. 
+4. Violation of ISP (Interface Segregation): If this class implemented a giant `IProcess` interface with 20 methods it didn't need, it would be bloated and hard to maintain. 
+5. Violation of DIP (Dependency Inversion): It is hard-linked to `MySQLDatabase`. You cannot swap it for a `MongoDatabase` or a "Mock" database for testing without rewriting the whole class.

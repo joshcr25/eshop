@@ -1,7 +1,7 @@
 package id.ac.ui.cs.advprog.testproject.service;
 
 import id.ac.ui.cs.advprog.testproject.model.Product;
-import id.ac.ui.cs.advprog.testproject.repository.ProductRepository;
+import id.ac.ui.cs.advprog.testproject.repository.ProductRepositoryInterface;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,7 +14,7 @@ import java.util.UUID;
 public class ProductServiceImpl implements ProductService {
 
     @Autowired
-    private ProductRepository productRepository;
+    private ProductRepositoryInterface productRepository;
 
     @Override
     public Product create(Product product) {
