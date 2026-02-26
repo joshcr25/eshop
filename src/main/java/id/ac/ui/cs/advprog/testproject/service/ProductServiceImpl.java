@@ -2,6 +2,7 @@ package id.ac.ui.cs.advprog.testproject.service;
 
 import id.ac.ui.cs.advprog.testproject.model.Product;
 import id.ac.ui.cs.advprog.testproject.repository.ProductRepository;
+import id.ac.ui.cs.advprog.testproject.repository.ProductRepositoryInterface;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,20 +15,20 @@ import java.util.UUID;
 public class ProductServiceImpl implements ProductService {
 
     @Autowired
-    private ProductRepository productRepository;
+    private ProductRepositoryInterface productRepositoryInterface;
 
     @Override
     public Product create(Product product) {
         if (product.getProductId() == null || product.getProductId().isBlank()) {
             product.setProductId(UUID.randomUUID().toString());
         }
-        productRepository.create(product);
+        productRepositoryInterface.create(product);
         return product;
     }
 
     @Override
     public List<Product> findAll() {
-        Iterator<Product> productIterator = productRepository.findAll();
+        Iterator<Product> productIterator = productRepositoryInterface.findAll();
         List<Product> allProduct = new ArrayList<>();
         productIterator.forEachRemaining(allProduct::add);
         return allProduct;
@@ -35,16 +36,16 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public Product findById(String productId) {
-        return productRepository.findById(productId);
+        return productRepositoryInterface.findById(productId);
     }
 
     @Override
     public Product update(Product product) {
-        return productRepository.update(product);
+        return productRepositoryInterface.update(product);
     }
 
     @Override
     public Product delete(Product product) {
-        return productRepository.delete(product);
+        return productRepositoryInterface.delete(product);
     }
 }

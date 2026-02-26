@@ -1,8 +1,6 @@
 package id.ac.ui.cs.advprog.testproject.controller;
 
-import id.ac.ui.cs.advprog.testproject.model.Car;
 import id.ac.ui.cs.advprog.testproject.model.Product;
-import id.ac.ui.cs.advprog.testproject.service.CarServiceImpl;
 import id.ac.ui.cs.advprog.testproject.service.ProductService;
 
 import org.springframework.beans.factory.annotation.Autowired;
