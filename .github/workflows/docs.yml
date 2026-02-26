@@ -1,4 +1,6 @@
 name: Docs workflow
+permissions:
+  contents: read
 on:
   workflow_dispatch:
   schedule:
@@ -47,6 +49,8 @@ jobs:
     name: Update
     needs: create
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v2
