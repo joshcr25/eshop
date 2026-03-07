@@ -1,5 +1,16 @@
 package id.ac.ui.cs.advprog.testproject.repository;
 
+import id.ac.ui.cs.advprog.testproject.enums.OrderStatus;
+import id.ac.ui.cs.advprog.testproject.model.Order;
+import id.ac.ui.cs.advprog.testproject.model.Product;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+
 public class OrderRepositoryTest {
     OrderRepository orderRepository;
     List<Order> orders;
@@ -19,7 +30,7 @@ public class OrderRepositoryTest {
         orders = new ArrayList<>();
         Order order1 = new Order("13652556-012a-4c07-b546-54eb1396d79b", products,
 
-                products, 1708560000L,
+                 1708560000L,
                 "Safira Sudrajat");
 
         orders.add(order1);
@@ -91,7 +102,7 @@ public class OrderRepositoryTest {
 
             List<Order> orderList = orderRepository.findAllByAuthor(
                     orders.get(1).getAuthor());
-            assertEquals(expected:2, orderList.size());
+            assertEquals(2, orderList.size());
         }
     }
 
