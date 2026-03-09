@@ -89,7 +89,39 @@ class PaymentTest {
     }
 
     @Test
+    void testSetStatusWithFailedStatus() {
+        payment.setStatus("FAILED");
+        assertEquals("FAILED", payment.getStatus());
+    }
+
+    @Test
+    void testSettersForIdAndMethod() {
+        payment.setId("payment-2");
+        payment.setMethod("Voucher Code");
+
+        assertEquals("payment-2", payment.getId());
+        assertEquals("Voucher Code", payment.getMethod());
+    }
+
+    @Test
     void testSetStatusWithInvalidStatusThrowsException() {
         assertThrows(IllegalArgumentException.class, () -> payment.setStatus("MEOW"));
+    }
+
+    @Test
+    void testDefaultConstructorAndSetters() {
+        Payment emptyPayment = new Payment();
+        Map<String, String> newPaymentData = new HashMap<>();
+        newPaymentData.put("key", "value");
+
+        emptyPayment.setId("id-1");
+        emptyPayment.setMethod("Cash On Delivery");
+        emptyPayment.setPaymentData(newPaymentData);
+        emptyPayment.setStatus("SUCCESS");
+
+        assertEquals("id-1", emptyPayment.getId());
+        assertEquals("Cash On Delivery", emptyPayment.getMethod());
+        assertEquals("SUCCESS", emptyPayment.getStatus());
+        assertEquals("value", emptyPayment.getPaymentData().get("key"));
     }
 }

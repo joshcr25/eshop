@@ -96,6 +96,17 @@ public class PaymentServiceTest {
     }
 
     @Test
+    void testSetStatusFailedUpdatesPaymentAndOrderToFailed() {
+        doReturn(order).when(orderRepository).findById(order.getId());
+
+        Payment result = paymentService.setStatus(payment, "FAILED");
+
+        assertEquals("FAILED", result.getStatus());
+        verify(paymentRepository, times(1)).save(payment);
+        verify(orderRepository, times(1)).save(any(Order.class));
+    }
+
+    @Test
     void testGetPaymentIfIdFound() {
         doReturn(payment).when(paymentRepository).findById(payment.getId());
 
@@ -138,6 +149,27 @@ public class PaymentServiceTest {
     void testSetStatusInvalidStatus() {
         assertThrows(IllegalArgumentException.class, () -> paymentService.setStatus(payment, "MEOW"));
         verify(paymentRepository, times(0)).save(any(Payment.class));
+        verify(orderRepository, times(0)).save(any(Order.class));
+    }
+
+    @Test
+    void testUpdateOrderReturnsNullWhenOrderNotFound() {
+        doReturn(null).when(orderRepository).findById(order.getId());
+
+        Order result = paymentService.updateOrder(payment, "SUCCESS");
+
+        assertNull(result);
+        verify(orderRepository, times(1)).findById(order.getId());
+        verify(orderRepository, times(0)).save(any(Order.class));
+    }
+
+    @Test
+    void testUpdateOrderReturnsNullWhenMappedStatusNull() {
+        doReturn(order).when(orderRepository).findById(order.getId());
+
+        Order result = paymentService.updateOrder(payment, null);
+        assertNull(result);
+        verify(orderRepository, times(1)).findById(order.getId());
         verify(orderRepository, times(0)).save(any(Order.class));
     }
 }

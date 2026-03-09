@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class PaymentRepositoryTest {
@@ -88,5 +89,39 @@ public class PaymentRepositoryTest {
 
         Payment findResult = paymentRepository.findById("40a1-6bed-1f1f-9978-ca3412789065");
         assertNull(findResult);
+    }
+
+    @Test
+    void testFindAllReturnsCopyOfSavedPayments() {
+        for (Payment payment : payments) {
+            paymentRepository.save(payment);
+        }
+
+        List<Payment> results = paymentRepository.findAll();
+        assertEquals(1, results.size());
+        assertEquals(payments.get(0).getId(), results.get(0).getId());
+        assertNotSame(results, paymentRepository.findAll());
+    }
+
+    @Test
+    void testSaveUpdateAfterFirstMismatch() {
+        Map<String, String> firstData = new HashMap<>();
+        firstData.put("A", "1");
+        Payment first = new Payment("id-1", "Cash On Delivery", firstData);
+        paymentRepository.save(first);
+
+        Map<String, String> secondData = new HashMap<>();
+        secondData.put("B", "2");
+        Payment second = new Payment("id-2", "Cash On Delivery", secondData);
+        paymentRepository.save(second);
+
+        Map<String, String> updatedSecondData = new HashMap<>();
+        updatedSecondData.put("B", "99");
+        Payment updatedSecond = new Payment("id-2", "Cash On Delivery", updatedSecondData);
+        updatedSecond.setStatus("SUCCESS");
+
+        Payment result = paymentRepository.save(updatedSecond);
+        assertEquals("id-2", result.getId());
+        assertEquals("99", paymentRepository.findById("id-2").getPaymentData().get("B"));
     }
 }
