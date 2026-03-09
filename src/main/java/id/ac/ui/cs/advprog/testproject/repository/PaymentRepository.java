@@ -32,4 +32,8 @@ public class PaymentRepository implements PaymentRepositoryInterface {
 
         return null;
     }
+
+    public List<Payment> findAll() {
+        return new ArrayList<>(paymentData);
+    }
 }
