@@ -14,15 +14,12 @@ class PaymentTest {
 
     @BeforeEach
     void setUp() {
-        payment = new Payment();
         paymentData = new HashMap<>();
         paymentData.put("bank", "TESTIBANK");
         paymentData.put("accountNumber", "1234567890");
+        payment = new Payment("13652556-012a-4c07-b546-54eb1396d79b", "BANK_TRANSFER", paymentData);
 
-        payment.setId("13652556-012a-4c07-b546-54eb1396d79b");
-        payment.setMethod("BANK_TRANSFER");
-        payment.setStatus("PENDING");
-        payment.setPaymentData(paymentData);
+
     }
 
     @Test
@@ -65,11 +62,34 @@ class PaymentTest {
     @Test
     void testSetPaymentDataCanOverwriteValue() {
         Map<String, String> newPaymentData = new HashMap<>();
-        newPaymentData.put("wallet", "GoPay");
+        newPaymentData.put("wallet", "MockPay");
 
         payment.setPaymentData(newPaymentData);
 
         assertEquals(1, payment.getPaymentData().size());
-        assertEquals("GoPay", payment.getPaymentData().get("wallet"));
+        assertEquals("MockPay", payment.getPaymentData().get("wallet"));
+    }
+
+    @Test
+    void testConstructorThrowsExceptionWhenPaymentDataIsEmpty() {
+        Map<String, String> emptyPaymentData = new HashMap<>();
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> new Payment("13652556-012a-4c07-b546-54eb1396d79b", "BANK_TRANSFER", emptyPaymentData)
+        );
+
+        assertEquals("Payment data is empty", exception.getMessage());
+    }
+
+    @Test
+    void testSetStatusWithValidStatus() {
+        payment.setStatus("SUCCESS");
+        assertEquals("SUCCESS", payment.getStatus());
+    }
+
+    @Test
+    void testSetStatusWithInvalidStatusThrowsException() {
+        assertThrows(IllegalArgumentException.class, () -> payment.setStatus("MEOW"));
     }
 }
