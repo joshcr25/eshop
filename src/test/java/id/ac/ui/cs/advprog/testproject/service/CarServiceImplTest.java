@@ -62,6 +62,21 @@ class CarServiceImplTest {
     }
 
     @Test
+    void createShouldGenerateIdWhenBlank() {
+        Car carWithBlankId = new Car();
+        carWithBlankId.setCarId("   ");
+        carWithBlankId.setCarName("Blank");
+        carWithBlankId.setCarColor("Blue");
+        carWithBlankId.setCarQuantity(1);
+
+        Car created = carService.create(carWithBlankId);
+
+        assertNotNull(created.getCarId());
+        assertFalse(created.getCarId().isBlank());
+        verify(carRepository).create(carWithBlankId);
+    }
+
+    @Test
     void findAllShouldConvertIteratorToList() {
         Car secondCar = new Car();
         secondCar.setCarId("car-2");

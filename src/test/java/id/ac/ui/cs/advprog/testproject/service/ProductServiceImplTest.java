@@ -60,6 +60,20 @@ class ProductServiceImplTest {
     }
 
     @Test
+    void createShouldGenerateIdWhenBlank() {
+        Product blankProduct = new Product();
+        blankProduct.setProductId(" ");
+        blankProduct.setProductName("Blank");
+        blankProduct.setProductQuantity(2);
+
+        Product created = productService.create(blankProduct);
+
+        assertNotNull(created.getProductId());
+        assertFalse(created.getProductId().isBlank());
+        verify(productRepository).create(blankProduct);
+    }
+
+    @Test
     void findAllShouldConvertIteratorToList() {
         Product secondProduct = new Product();
         secondProduct.setProductId("product-2");

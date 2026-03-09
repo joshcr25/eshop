@@ -45,6 +45,9 @@ class CashOnDeliveryUnitTest {
     void isValidCashOnDeliveryShouldValidateMapContent() {
         assertFalse(cashOnDelivery.isValidCashOnDelivery(null));
         assertFalse(cashOnDelivery.isValidCashOnDelivery(Map.of()));
+        assertFalse(cashOnDelivery.isValidCashOnDelivery(
+                cashOnDelivery.paymentDataWithAddressAndDeliveryFee("Jl. Mawar", "not-a-number")
+        ));
 
         Map<String, String> validData =
                 cashOnDelivery.paymentDataWithAddressAndDeliveryFee("Jl. Mawar", "15000");
