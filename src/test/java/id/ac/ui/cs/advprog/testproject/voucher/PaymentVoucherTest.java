@@ -14,7 +14,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -26,11 +25,14 @@ import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 public class PaymentVoucherTest {
+    private static final String PAYMENT_METHOD = "Voucher Code";
+    private static final String VALID_VOUCHER_CODE = "ESHOP1234ABC5678";
+    private static final String INVALID_LENGTH_VOUCHER = "ESHOP1234ABC567";
+    private static final String INVALID_PREFIX_VOUCHER = "TOKO1234ABC5678";
+    private static final String INVALID_DIGIT_COUNT_VOUCHER = "ESHOP12ABCD345678";
+
     @InjectMocks
     PaymentServiceImpl paymentService;
-
-    @Mock
-    PaymentVoucher paymentVoucher;
 
     @Mock
     PaymentRepository paymentRepository;
@@ -39,9 +41,12 @@ public class PaymentVoucherTest {
     OrderRepository orderRepository;
 
     private Order order;
+    private PaymentVoucher paymentVoucher;
 
     @BeforeEach
     void setUp() {
+        paymentVoucher = new PaymentVoucher();
+
         List<Product> products = new ArrayList<>();
         Product product = new Product();
         product.setProductId("eb558e9f-1c39-460e-8860-71af6af63bd6");
@@ -59,49 +64,42 @@ public class PaymentVoucherTest {
 
     @Test
     void testAddPaymentWithValidVoucherCodeShouldSetStatusSuccess() {
-        Map<String, String> paymentData = paymentVoucher.paymentDataWithVoucher("ESHOP1234ABC5678");
-        Payment result = createVoucherPaymentAndSetStatus(paymentData);
-
-        assertEquals("SUCCESS", result.getStatus());
+        Map<String, String> paymentData = paymentVoucher.paymentDataWithVoucher(VALID_VOUCHER_CODE);
+        createVoucherPaymentAndSetStatus(paymentData, PaymentVoucher.STATUS_SUCCESS, "SUCCESS");
         verify(paymentRepository, times(2)).save(any(Payment.class));
         verify(orderRepository, times(1)).save(any(Order.class));
     }
 
     @Test
     void testAddPaymentWithVoucherCodeLengthNot16ShouldSetStatusFailed() {
-        Map<String, String> paymentData = paymentVoucher.paymentDataWithVoucher("ESHOP1234ABC567");
-        Payment result = createVoucherPaymentAndSetStatus(paymentData);
-
-        assertEquals("FAILED", result.getStatus());
+        Map<String, String> paymentData = paymentVoucher.paymentDataWithVoucher(INVALID_LENGTH_VOUCHER);
+        createVoucherPaymentAndSetStatus(paymentData, PaymentVoucher.STATUS_REJECTED, "FAILED");
     }
 
     @Test
     void testAddPaymentWithVoucherCodeNotStartingWithEshopShouldSetStatusFailed() {
-        Map<String, String> paymentData = paymentVoucher.paymentDataWithVoucher("TOKO1234ABC5678");
-        Payment result = createVoucherPaymentAndSetStatus(paymentData);
-
-        assertEquals("FAILED", result.getStatus());
+        Map<String, String> paymentData = paymentVoucher.paymentDataWithVoucher(INVALID_PREFIX_VOUCHER);
+        createVoucherPaymentAndSetStatus(paymentData, PaymentVoucher.STATUS_REJECTED, "FAILED");
     }
 
     @Test
     void testAddPaymentWithVoucherCodeNumericCharsNot8ShouldSetStatusFailed() {
-        Map<String, String> paymentData = paymentVoucher.paymentDataWithVoucher("ESHOP12ABCD345678");
-        Payment result = createVoucherPaymentAndSetStatus(paymentData);
-
-        assertEquals("FAILED", result.getStatus());
+        Map<String, String> paymentData = paymentVoucher.paymentDataWithVoucher(INVALID_DIGIT_COUNT_VOUCHER);
+        createVoucherPaymentAndSetStatus(paymentData, PaymentVoucher.STATUS_REJECTED, "FAILED");
     }
 
-
-
-    private Payment createVoucherPaymentAndSetStatus(Map<String, String> paymentData) {
+    private void createVoucherPaymentAndSetStatus(
+            Map<String, String> paymentData,
+            String voucherStatus,
+            String expectedPaymentStatus
+    ) {
         doReturn(order).when(orderRepository).findById(order.getId());
-        doReturn(new Payment(order.getId(), "Voucher Code", paymentData))
+        doReturn(new Payment(order.getId(), PAYMENT_METHOD, paymentData))
                 .when(paymentRepository).save(any(Payment.class));
 
-        Payment createdPayment = paymentService.addPayment(order, "Voucher Code", paymentData);
-        String normalizedStatus = paymentVoucher.isValidVoucher(paymentData.get("voucherCode")) ? "SUCCESS" : "REJECTED";
-        return paymentService.setStatus(createdPayment, normalizedStatus);
+        Payment createdPayment = paymentService.addPayment(order, PAYMENT_METHOD, paymentData);
+        Payment updatedPayment = paymentService.setStatus(createdPayment, voucherStatus);
+
+        assertEquals(expectedPaymentStatus, updatedPayment.getStatus());
     }
-
-
 }
