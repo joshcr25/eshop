@@ -100,7 +100,8 @@ public class CashOnDeliveryTest {
         createCODPaymentAndSetStatus(paymentData, "REJECTED", "FAILED");
     }
 
-    private void createCODPaymentAndSetStatus(
+    @Test
+    public void createCODPaymentAndSetStatus(
             Map<String, String> paymentData,
             String codStatus,
             String expectedPaymentStatus
