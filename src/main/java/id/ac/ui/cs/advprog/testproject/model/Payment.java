@@ -29,8 +29,10 @@ public class Payment {
     }
 
     public void setStatus(String status) {
-        if (PaymentStatus.contains(status)) {
-            this.status = status;
+        if (status.contains("SUCCESS")) {
+            this.status = PaymentStatus.SUCCESS.getValue();
+        } else if (status.contains("FAILED")) {
+            this.status = PaymentStatus.FAILED.getValue();
         } else {
             throw new IllegalArgumentException();
         }
