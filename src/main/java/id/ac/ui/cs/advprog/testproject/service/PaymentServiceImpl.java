@@ -30,31 +30,23 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public Payment setStatus(Payment payment, String status) {
         String normalizedPaymentStatus = status;
-        String mappedOrderStatus = null;
+        String mappedOrderStatus;
 
-        if ("REJECTED".equals(status)) {
+        if (status.contains("REJECTED")) {
             normalizedPaymentStatus = "FAILED";
             mappedOrderStatus = OrderStatus.FAILED.getValue();
-        } else if ("SUCCESS".equals(status)) {
+        } else if (status.contains("SUCCESS")) {
             mappedOrderStatus = OrderStatus.SUCCESS.getValue();
-        } else if ("FAILED".equals(status)) {
+        } else if (status.contains("FAILED")) {
             mappedOrderStatus = OrderStatus.FAILED.getValue();
+        } else {
+            throw new IllegalArgumentException();
         }
 
         payment.setStatus(normalizedPaymentStatus);
-        paymentRepository.save(payment);
+        this.save(payment);
 
-        Order order = orderRepository.findById(payment.getId());
-        if (order != null && mappedOrderStatus != null) {
-            Order updatedOrder = new Order(
-                    order.getId(),
-                    order.getProducts(),
-                    order.getOrderTime(),
-                    order.getAuthor(),
-                    mappedOrderStatus
-            );
-            orderRepository.save(updatedOrder);
-        }
+        this.updateOrder(payment, mappedOrderStatus);
 
         return payment;
     }
@@ -67,5 +59,24 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public List<Payment> getAllPayments() {
         return paymentRepository.findAll();
+    }
+
+    public Payment save(Payment payment) {
+        return paymentRepository.save(payment);
+    }
+
+    public Order updateOrder(Payment payment, String mappedOrderStatus) {
+        Order order = orderRepository.findById(payment.getId());
+        if (order != null && mappedOrderStatus != null) {
+            Order updatedOrder = new Order(
+                    order.getId(),
+                    order.getProducts(),
+                    order.getOrderTime(),
+                    order.getAuthor(),
+                    mappedOrderStatus
+            );
+            return orderRepository.save(updatedOrder);
+        }
+        return null;
     }
 }
