@@ -49,7 +49,7 @@ class PaymentTest {
 
     @Test
     void testGetIdNegativeScenario() {
-        assertNotEquals("wrong-id", payment.getId());
+        assertNotEquals("40671819-9282-3939-1901-9aaabbc1092f", payment.getId());
     }
 
     @Test
