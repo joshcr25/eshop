@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Repository
-public class PaymentRepository {
+public class PaymentRepository implements PaymentRepositoryInterface {
     private final List<Payment> paymentData = new ArrayList<>();
 
     public Payment save(Payment payment) {
